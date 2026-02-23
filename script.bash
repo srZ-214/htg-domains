@@ -2,6 +2,7 @@
 
 
 RESULT_DIR="$PWD/results"
+MEMORY_LIMIT="8G" 
 TIME_LIMIT=1800
 mkdir -p "$RESULT_DIR"
 
@@ -74,6 +75,7 @@ for file in "$current_dir"/* ; do
             start2=$(timestamp)
             ../downward/fast-downward.py \
                 --overall-time-limit $TIME_LIMIT \
+                --overall-memory-limit "$MEMORY_LIMIT" \
                 dm.pddl pblm.pddl --search "astar(lmcut())" \
                 2>&1 | tee "$out_dir/our_fd.log"
             our_exit2=${PIPESTATUS[0]}
@@ -92,6 +94,7 @@ for file in "$current_dir"/* ; do
         start_b=$(timestamp)
         ../downward/fast-downward.py \
             --overall-time-limit $TIME_LIMIT \
+            --overall-memory-limit "$MEMORY_LIMIT" \
             "$current_dir/domain.pddl" "$file" --search "astar(lmcut())" \
             2>&1 | tee "$out_dir/baseline_fd.log"
         baseline_exit=${PIPESTATUS[0]}
