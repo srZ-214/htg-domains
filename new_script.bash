@@ -73,7 +73,7 @@ for file in "$current_dir"/* ; do
             echo ">>> [OUR] Step 2: Fast Downward on grounded PDDL"
             start2=$(timestamp)
             ../downward/fast-downward.py \
-                --overall-time-limit $TIME_LIMIT \
+                --overall-time-limit $TIME_LIMIT --overall-memory-limit 8G \
                 dm.pddl pblm.pddl --search "astar(lmcut())" \
                 2>&1 | tee "$out_dir/our_fd.log"
             our_exit2=${PIPESTATUS[0]}
@@ -91,7 +91,7 @@ for file in "$current_dir"/* ; do
         echo ">>> [BASELINE] Fast Downward on original PDDL"
         start_b=$(timestamp)
         ../downward/fast-downward.py \
-            --overall-time-limit $TIME_LIMIT \
+            --overall-time-limit $TIME_LIMIT --overall-memory-limit 8G \
             "$current_dir/domain.pddl" "$file" --search "astar(lmcut())" \
             2>&1 | tee "$out_dir/baseline_fd.log"
         baseline_exit=${PIPESTATUS[0]}
