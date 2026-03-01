@@ -20,7 +20,14 @@ timediff(){
 }
 
 extract_h_value(){
-    grep "Initial heuristic value" "$1" 2>/dev/null | grep -oE '[0-9]+' | tail -1
+    local line=$(grep "Initial heuristic value" "$1" 2>/dev/null)
+    if [ -z "$line" ]; then
+        echo "N/A"
+    elif echo "$line" | grep -q "infinity"; then
+        echo "INF"
+    else
+        echo "$line" | grep -oE '[0-9]+' | tail -1
+    fi
 }
 
 extract_status(){
