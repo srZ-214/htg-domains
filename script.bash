@@ -32,24 +32,57 @@ extract_h_value(){
 
 extract_status(){
     local log=$1 exit_code=$2
+
+    # Check log content first (most reliable)
+    if grep -q "Translator ran out of memory" "$log" 2>/dev/null || \
+       grep -q "MemoryError" "$log" 2>/dev/null; then
+        echo "OOM"
+        return
+    fi
+    if grep -q "Time limit has been reached" "$log" 2>/dev/null; then
+        echo "TIMEOUT"
+        return
+    fi
+
+    # Fall back to exit code
     case $exit_code in
         0|1|2|3) echo "SUCCESS" ;;
         10|11|12) echo "UNSOLVABLE" ;;
-        20|21|22|24|137) echo "OOM" ;;
-        23) echo "TIMEOUT" ;;
+        20|22|24|137) echo "OOM" ;;
+        21|23) echo "TIMEOUT" ;;
         *) echo "ERROR" ;;
     esac
 }
 
 extract_fd_ground_time(){
     local log_file=$1
-    # Find the first occurrence of "Done!" and extract the numeric value before "wall-clock"
-    local time_val=$(grep "Done!" "$log_file" 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+s wall-clock' | grep -oE '[0-9]+\.[0-9]+')
-    if [ -z "$time_val" ]; then
-        echo "N/A"
-    else
-        echo "$time_val"
+
+    # If translate failed, all time was spent on grounding
+    if grep -q "Driver aborting after translate" "$log_file" 2>/dev/null || \
+       grep -q "Translator ran out of memory" "$log_file" 2>/dev/null || \
+       grep -q "MemoryError" "$log_file" 2>/dev/null; then
+        local planner_time=$(grep "Planner time:" "$log_file" 2>/dev/null \
+            | grep -oE '[0-9]+\.[0-9]+' | head -1)
+        if [ -n "$planner_time" ]; then
+            echo "$planner_time"
+        else
+            echo "N/A"
+        fi
+        return
     fi
+
+    # Normal case: sum all "Done!" wall-clock times
+    local count=$(grep -c "Done!" "$log_file" 2>/dev/null)
+    if [ "$count" -eq 0 ] 2>/dev/null; then
+        echo "N/A"
+        return
+    fi
+
+    local total=$(grep "Done!" "$log_file" 2>/dev/null \
+        | grep -oE '[0-9]+\.[0-9]+s wall-clock' \
+        | grep -oE '[0-9]+\.[0-9]+' \
+        | python3 -c "import sys; print(round(sum(float(l) for l in sys.stdin), 3))")
+    echo "$total"
 }
 
 run_cmd(){
