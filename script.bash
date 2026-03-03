@@ -218,6 +218,11 @@ traverse_dir(){
  local current_dir=$1
  echo "current dir :$current_dir"
 
+  # Skip genome-edit-distance domains (action costs not supported)
+  case "$current_dir" in
+    *genome-edit-distance*) echo "SKIP (action cost domain): $current_dir"; return ;;
+  esac
+
   if [ -f "$current_dir/domain.pddl" ]; then
     echo "find domain file, running test under $current_dir"
     run_cmd
