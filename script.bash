@@ -105,6 +105,8 @@ for file in "$current_dir"/* ; do
         echo "========================================================"
         echo "processing $file"
         echo "========================================================"
+        # Clean up leftover files from previous runs
+        rm -f dm.pddl pblm.pddl output.lifted output.sas sas_plan        
 
         # ---- OUR METHOD Step 1: Powerlifted Transformation ----
         echo ">>> [OUR] Step 1: Powerlifted Transformation"
