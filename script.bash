@@ -2,7 +2,7 @@
 
 RESULT_DIR="$PWD/results"
 MEMORY_LIMIT="8G"
-TIME_LIMIT=900
+TIME_LIMIT=300
 mkdir -p "$RESULT_DIR"
 
 CSV="$RESULT_DIR/all_results.csv"
